@@ -166,7 +166,7 @@ void serialPutchar (const int fd, const unsigned char c)
  *********************************************************************************
  */
 
-void serialPuts (const int fd, const unsigned char *s, size_t size)
+void serialPuts (const int fd, char *s, size_t size)
 {
   write (fd, (char *)s, size) ;
 }
@@ -186,7 +186,7 @@ void serialPrintf (const int fd, const char *message, ...)
     vsnprintf (buffer, 1023, message, argp) ;
   va_end (argp) ;
 
-  serialPuts (fd, (unsigned char *)buffer, 1024) ;
+  serialPuts (fd, (char *)buffer, 1024) ;
 }
 
 
@@ -253,10 +253,11 @@ int serialGets (const int fd, const unsigned char *s, size_t size)
  */
 void uint642byte(uint64_t f_num, unsigned char *byteArray)
 {
-	char* pchar = (char*)&f_num;
+	unsigned char* pchar = (unsigned char* )&f_num;
 	for(int i=0; i<sizeof(uint64_t);i++)
 	{
 		*byteArray=*pchar;
+		printf("---%c----%c---/n/r", *byteArray, *pchar);
 		pchar++;
 		byteArray++;
 	}

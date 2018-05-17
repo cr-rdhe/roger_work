@@ -3,10 +3,11 @@
 #include <iostream>
 #include <vector>
 
-#include "infinova.h"
+#include "poya.h"
+#include "wiringSerial.h"
 int main(int argc, char *argv[])
 {
-  open_serial_device();
+  //open_serial_device();
 #if 1
   while(1)
 #endif
@@ -27,7 +28,13 @@ int main(int argc, char *argv[])
               0x5b,0x5a,
               0x50,0x55, };
   
-  send_result_to_infinova(rect, x);
+    if(1)
+      send_faces_to_poya(rect, x);
+    else
+      recv_face_test();
+ 
+    break;
   }
+
   close_serial_device();
 }
