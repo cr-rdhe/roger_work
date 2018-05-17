@@ -26,7 +26,7 @@ const unsigned char start_signal = 0xa9;
 //open the serial device using the static file descriptor
 void open_serial_device()
 {
-	serial_fd = serialOpen("/dev/ttyAMA0", 115200);
+	serial_fd = serialOpen("/dev/ttyPS1", 115200);
 	if(serial_fd < 0){
 		fprintf(stderr, "[RAINMAN] Error: Cannot open serial device: /dev/ttyAMA0 \n");
 		exit(1);
@@ -79,11 +79,12 @@ void send_faces_to_poya(std::vector<float> rect, void *ts)
     char* uart_out;
     uart_out = cJSON_Print(face_obj);
     int uart_len = strlen(uart_out);
-    //serialPutchar(serial_fd, 0xa5);
-    //send_buffer(uart_out, uart_len);
-    //serialPutchar(serial_fd, 0xa9);
+    serialPutchar(serial_fd, 0xa5);
+    send_buffer(uart_out, uart_len);
+    serialPutchar(serial_fd, 0xa9);
 
-    printf("%s\n",uart_out);
+    fprintf(stderr, "len is %d--- \n", uart_len);
+    //printf("%s\n",uart_out);
     cJSON_Delete(face_obj);	
     //free(fis);	
     free(uart_out);

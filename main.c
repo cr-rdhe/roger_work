@@ -7,7 +7,7 @@
 #include "wiringSerial.h"
 int main(int argc, char *argv[])
 {
-  //open_serial_device();
+  open_serial_device();
 #if 1
   while(1)
 #endif
