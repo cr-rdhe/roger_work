@@ -91,25 +91,65 @@ void send_faces_to_poya(std::vector<float> rect, void *ts)
 
 void recv_face_test()
 {
-    char *uart_buffer = (char*)malloc(1000);
+ /* int count ,j,x;
+  unsigned int nextTime ;
+  for (count = 0 ; count < 32 ; )
+  {
+    //if (millis () > nextTime)
+    {
+      printf ("\nOut: %3d: ", count) ;
+      fflush (stdout) ;
+      serialPutchar (serial_fd, count) ;
+      nextTime += 300 ;
+      ++count ;
+    }
+
+    //delay (3) ;
+    for (j= 1;j< 65530; j++) x = j*j;
+	
+    while (serialDataAvail (serial_fd) <= 0){}
+    printf ("the available data num is  %d---", serialDataAvail(serial_fd)) ;
+    fflush (stdout) ;
+    if((count % 2) == 0){
+      printf (" -> %3d", serialGetchar (serial_fd)) ;
+      fflush (stdout) ;
+    }
+  }*/
+
+    char *uart_buffer = (char*)malloc(2000);
     int len = 0;
-    while(1){
+    fprintf(stderr, "[RAINMAN] hahaha \n");
+    while(serialDataAvail(serial_fd) <= 0){}
+    while(serialDataAvail(serial_fd)){
+	
         char get_byte = (char)serialGetchar(serial_fd);
-        while(get_byte != 0xa5){
+        fprintf(stderr, "get first byte %c \n", get_byte);
+	while(get_byte != 0xa5){
+            fprintf(stderr, "not get ox5a \n");
+            while(serialDataAvail(serial_fd) <= 0){}
             get_byte = (char)serialGetchar(serial_fd);
-        }
+	}
+        fprintf(stderr, "find the header \n");
+        while(serialDataAvail(serial_fd) <= 0){}
         get_byte = (char)serialGetchar(serial_fd);
         while(get_byte != 0xa9){
             *(uart_buffer + len) = get_byte;
+            while(serialDataAvail(serial_fd) <= 0){}
             get_byte = (char)serialGetchar(serial_fd);
             len += 1;
         }
 	*(uart_buffer + len) = '\0';
+	int test_len = strlen(uart_buffer);
+        fprintf(stderr, "testlen = %d---, len is %d--- \n",test_len,len);
         cJSON* jason_obj = cJSON_Parse(uart_buffer);
+        fprintf(stderr, "parse finish--- \n");
+	char* u_jason = cJSON_Print(jason_obj);
+	printf("%s\n",u_jason);
 	cJSON *fis_obj = cJSON_GetObjectItem(jason_obj, "fis");
         	
 	char* uart_jason = cJSON_Print(fis_obj);
 	printf("%s\n",uart_jason);
+        fflush (stdout) ;
 			
 	len = 0;
     }
