@@ -18,16 +18,11 @@ int main(int argc, char *argv[])
     rect.push_back(0.2);
     rect.push_back(0.6);
     rect.push_back(0.6);
-    unsigned char x[16] = {
-              0x50,0x50,
-              0x50,0x50,
-              0x50,0x50,
-              0x50,0x50,
-              0x53,0x58,
-              0x55,0x52,
-              0x5b,0x5a,
-              0x50,0x55, };
-  
+    std::vector<unsigned int> x;
+    x.push_back(1);
+    x.push_back(2);
+    x.push_back(3);
+    x.push_back(4);
     if(1)
       send_faces_to_poya(rect, x);
     else

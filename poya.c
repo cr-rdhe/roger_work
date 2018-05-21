@@ -43,19 +43,20 @@ void close_serial_device()
 }
 
 
-void send_faces_to_poya(std::vector<float> rect, void *ts)
+void send_faces_to_poya(std::vector<float> rect, std::vector<unsigned int> ts)
 {
     cJSON* face_obj;
     face_obj = cJSON_CreateObject();
     cJSON_AddNumberToObject(face_obj, "pcode", 8004);
     cJSON_AddStringToObject(face_obj, "pname", "FDR");
     cJSON_AddNumberToObject(face_obj, "idx", 2);
-    uint64_t cur_time;
-    ReadTimeStamp(ts, &cur_time);
-    char* time_bytes = (char*)malloc(sizeof(uint64_t) + 1);
+    //uint64_t cur_time;
+    //ReadTimeStamp(ts, &cur_time);
+    char* time_bytes = (char*)malloc(2 * 4 + 1);
     //uint642byte(cur_time, time_bytes_ptr);
-    sprintf(time_bytes, "%x", cur_time);
+    sprintf(time_bytes, "%02d%02d%02d%02d", ts[0], ts[1], ts[2], ts[3]);
     time_bytes[sizeof(uint64_t)] = '\0';
+    printf("string:---%s---\n", time_bytes);
     cJSON_AddStringToObject(face_obj, "pid", time_bytes);
     cJSON_AddNumberToObject(face_obj, "dt", 2);
     cJSON_AddNumberToObject(face_obj, "w", 1920);

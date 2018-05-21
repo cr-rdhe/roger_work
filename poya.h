@@ -21,7 +21,7 @@ void close_serial_device();
  * *************************************************************
  */
 
-void send_faces_to_poya(std::vector<float> rect, void *ts);
+void send_faces_to_poya(std::vector<float> rect, std::vector<unsigned int> ts);
 
 void recv_face_test();
 
