@@ -12,6 +12,7 @@
 #include <sys/stat.h>
 #include <iostream>
 #include <vector>
+#include <time.h>
 
 #include "poya.h"
 #include "cJSON.h"
@@ -43,7 +44,7 @@ void close_serial_device()
 }
 
 
-void send_faces_to_poya(std::vector<float> rect, std::vector<unsigned int> ts)
+void send_faces_to_poya(std::vector<float> rect)
 {
     cJSON* face_obj;
     face_obj = cJSON_CreateObject();
@@ -52,10 +53,13 @@ void send_faces_to_poya(std::vector<float> rect, std::vector<unsigned int> ts)
     cJSON_AddNumberToObject(face_obj, "idx", 2);
     //uint64_t cur_time;
     //ReadTimeStamp(ts, &cur_time);
-    char* time_bytes = (char*)malloc(2 * 4 + 1);
+    struct timespec ts;
+    clock_gettime(CLOCK_MONOTONIC, &ts);
+    char* time_bytes = (char*)malloc(30);
     //uint642byte(cur_time, time_bytes_ptr);
-    sprintf(time_bytes, "%02d%02d%02d%02d", ts[0], ts[1], ts[2], ts[3]);
-    time_bytes[sizeof(uint64_t)] = '\0';
+    sprintf(time_bytes, "%d%d", ts.tv_sec, ts.tv_nsec);
+    printf("time is ---%d---%d---",ts.tv_sec, ts.tv_nsec);
+    //time_bytes[sizeof(uint64_t)] = '\0';
     printf("string:---%s---\n", time_bytes);
     cJSON_AddStringToObject(face_obj, "pid", time_bytes);
     cJSON_AddNumberToObject(face_obj, "dt", 2);

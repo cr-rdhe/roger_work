@@ -7,7 +7,7 @@
 #include "wiringSerial.h"
 int main(int argc, char *argv[])
 {
-  open_serial_device();
+  //open_serial_device();
 #if 1
   while(1)
 #endif
@@ -24,12 +24,12 @@ int main(int argc, char *argv[])
     x.push_back(3);
     x.push_back(4);
     if(1)
-      send_faces_to_poya(rect, x);
+      send_faces_to_poya(rect);
     else
       recv_face_test();
  
     break;
   }
 
-  close_serial_device();
+  //close_serial_device();
 }
