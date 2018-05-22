@@ -8,9 +8,7 @@
 int main(int argc, char *argv[])
 {
   open_serial_device();
-#if 1
   while(1)
-#endif
   {
     std::vector<float> rect;
     rect.push_back(1);
@@ -33,7 +31,7 @@ int main(int argc, char *argv[])
     else{
       recv_face_test();
     }
-    break;
+   // break;
   }
 
   close_serial_device();

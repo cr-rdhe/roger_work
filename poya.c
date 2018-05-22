@@ -123,13 +123,13 @@ void recv_face_test()
     while(serialDataAvail(serial_fd)){
 	
         char get_byte = (char)serialGetchar(serial_fd);
-        fprintf(stderr, "get first byte %c \n", get_byte);
+        //fprintf(stderr, "get first byte %c \n", get_byte);
 	while(get_byte != 0xa5){
             fprintf(stderr, "not get ox5a \n");
             while(serialDataAvail(serial_fd) <= 0){}
             get_byte = (char)serialGetchar(serial_fd);
 	}
-        fprintf(stderr, "find the header \n");
+        //fprintf(stderr, "find the header \n");
         while(serialDataAvail(serial_fd) <= 0){}
         get_byte = (char)serialGetchar(serial_fd);
         while(get_byte != 0xa9){
@@ -140,17 +140,17 @@ void recv_face_test()
         }
 	*(uart_buffer + len) = '\0';
 	int test_len = strlen(uart_buffer);
-        fprintf(stderr, "testlen = %d---, len is %d--- \n",test_len,len);
+        //fprintf(stderr, "testlen = %d---, len is %d--- \n",test_len,len);
         cJSON* jason_obj = cJSON_Parse(uart_buffer);
-        fprintf(stderr, "parse finish--- \n");
+        //fprintf(stderr, "parse finish--- \n");
 	char* u_jason = cJSON_Print(jason_obj);
 	printf("%s\n",u_jason);
-	cJSON *fis_obj = cJSON_GetObjectItem(jason_obj, "fis");
+	/*cJSON *fis_obj = cJSON_GetObjectItem(jason_obj, "fis");
         	
 	char* uart_jason = cJSON_Print(fis_obj);
 	printf("%s\n",uart_jason);
         fflush (stdout) ;
-			
+	*/		
 	len = 0;
     }
 
