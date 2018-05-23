@@ -28,7 +28,5 @@ void recv_face_test();
 void send_buffer(char *buff, size_t size);
 void recv_buffer(unsigned char *buff, size_t size);
 
-static int ReadTimeStamp(void *addr, uint64_t *timestamp);
-static int FillTimeStamp(void *addr, uint64_t *timestamp);
-
+void uart_rt_poya();
 #endif 

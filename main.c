@@ -27,6 +27,8 @@ int main(int argc, char *argv[])
       send_faces_to_poya(rect);
     else
       recv_face_test();
+
+    uart_rt_poya();
  
     break;
   }

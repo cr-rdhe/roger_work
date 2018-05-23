@@ -81,6 +81,11 @@ void send_faces_to_poya(std::vector<float> rect)
 	cJSON_AddItemToArray(fis, float_array);
         i++;
     }
+    ///////////////////////////////////
+  cJSON *pc = cJSON_GetObjectItem(face_obj, "pcode");
+        fprintf(stderr," pcode is %d--- \n",pc->valueint);
+
+    //////////////////////////////////
     char* uart_out;
     uart_out = cJSON_Print(face_obj);
     int uart_len = strlen(uart_out);
@@ -122,9 +127,6 @@ void recv_face_test()
 
 }
 
-
-
-
 void send_buffer(char *buff, size_t size)
 {
    serialPuts(serial_fd, buff, size);
@@ -135,30 +137,101 @@ void recv_buffer(unsigned char *buff, size_t size)
    serialGets(serial_fd, buff, size);
 }
 
-static int ReadTimeStamp(void *addr, uint64_t *timestamp)
-{
-  char *addrp = (char *)addr;
-  char *datap = (char *)timestamp;
-  for(int i = 15; i >= 0; i--)
-  {
-    if(i%2)
-    {
-      datap[(15-i)/2] |= (addrp[i] & 0x0f);
-    }
-    else
-    {
-      datap[(15-i)/2] |= ((addrp[i] & 0x0f )<< 4);
-    }
-  }
-  return 0;
-}
+void uart_rt_poya(){
+    char *uart_buffer = (char*)malloc(2000);
+    int len = 0;
+    while(1){
+        char get_byte = (char)serialGetchar(serial_fd);
+        fprintf(stderr, "get first byte %c \n", get_byte);
+	while(get_byte != 0xa5){
+            fprintf(stderr, "not get ox5a \n");
+            while(serialDataAvail(serial_fd) <= 0){}
+            get_byte = (char)serialGetchar(serial_fd);
+	}
+        fprintf(stderr, "find the header \n");
+        while(serialDataAvail(serial_fd) <= 0){}
+        get_byte = (char)serialGetchar(serial_fd);
+        while(get_byte != 0xa9){
+            *(uart_buffer + len) = get_byte;
+            while(serialDataAvail(serial_fd) <= 0){}
+            get_byte = (char)serialGetchar(serial_fd);
+            len += 1;
+        }
+	*(uart_buffer + len) = '\0';
+	int test_len = strlen(uart_buffer);
+        fprintf(stderr, "testlen = %d---, len is %d--- \n",test_len,len);
+        cJSON* jason_obj = cJSON_Parse(uart_buffer);
+	char* u_jason = cJSON_Print(jason_obj);
+	printf("%s\n",u_jason);
+	cJSON *pc = cJSON_GetObjectItem(jason_obj, "pcode");	
+        fprintf(stderr," pcode is %d--- \n",pc->valueint);
+        int pcode = pc->valueint;
+	switch(pcode){
+	    case 9000:
+	        //return echo 
+		cJSON *es = cJSON_GetObjectItem(jason_obj, "echo_s");
+		cJSON *ei = cJSON_GetObjectItem(jason_obj, "echo_n");
+		send_echo_to_poya(es, ei);
+		break;
+	    case 9001:
+		//retrun board info
+		send_info_to_poya(); 
+		break;
+	    case 9002:
+		//return log level
+		send_log_level_to_poya();
+		break;
+	    case 9003:
+		//restart board
+		send_restart_succ_to_poya();
+		break;
+	    case 9005:
+		//set sys time
+		cJSON *year = cJSON_GetObjectItem(jason_obj, "year");
+		cJSON *month = cJSON_GetObjectItem(jason_obj, "month");
+		cJSON *day = cJSON_GetObjectItem(jason_obj, "day");
+		cJSON *hour = cJSON_GetObjectItem(jason_obj, "hour");
+		cJSON *min = cJSON_GetObjectItem(jason_obj, "minute");
+		cJSON *sec = cJSON_GetObjectItem(jason_obj, "second");
+		cJSON *mini_sec = cJSON_GetObjectItem(jason_obj, "millisecond");
+		set_time(year, month, day, hour, min, sec, mini_sec);
+		send_set_time_succ_to_poya();
+		break;
+	    case 8000:
+		// get face para
+		send_face_para_to_poya();
+		break;
+	    case 8001:
+		// set face fara
+		cJSON *minFW = cJSON_GetObjectItem(jason_obj, "minfacewidth");
+		cJSON *minFH = cJSON_GetObjectItem(jason_obj, "minfaceheight");
+		cJSON *ms = cJSON_GetObjectItem(jason_obj, "minscore");
+		cJSON *dp = cJSON_GetObjectItem(jason_obj, "detectpolicy");
+		set_face_para(minFW, minFH, ms, dp);
+		send_set_para_succ_to_poya();
+	    case 8002:
+		//open face detect
+		open_face_detect();
+		send_oc_dec_succ_to_poya(1);
+		break;
+	    case 8003:
+		//close face detect
+		close_face_detect();
+		send_oc_face_dec_succ_to_poya(2);
+	    case 8004:
+		//face received echo
+		break;
+	    default:
+		break;
+	}	
 
-static int FillTimeStamp(void *addr, uint64_t *timestamp)
-{
-  char *addrp = (char *)addr;
-  for(int i = 15; i >= 0; i--)
-  {
-    addrp[15-i] = 0x50 | (uint8_t)(((*timestamp) & (uint64_t)0xf << (i*4)) >> (i*4));
-  }
-  return 0;
+
+			
+	len = 0;
+        if(serialDataAvail(serial_fd) <= 0){
+	    break;
+	}
+    }
+
+
 }
