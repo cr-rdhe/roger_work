@@ -95,10 +95,11 @@ void send_buffer(char *buff, size_t size)
 }
 
 void uart_rt_poya(){
-    char *uart_buffer = (char*)malloc(2000);
-    int len = 0;
     while(1){
-        char get_byte = (char)serialGetchar(serial_fd);
+        char *uart_buffer = (char*)malloc(500);
+        int len = 0;
+        
+	char get_byte = (char)serialGetchar(serial_fd);
         fprintf(stderr, "get first byte %c \n", get_byte);
 	while(get_byte != 0xa5){
             fprintf(stderr, "not get ox5a \n");
@@ -120,15 +121,23 @@ void uart_rt_poya(){
         cJSON* jason_obj = cJSON_Parse(uart_buffer);
 	char* u_jason = cJSON_Print(jason_obj);
 	printf("%s\n",u_jason);
+	free(u_jason);
 	cJSON *pc = cJSON_GetObjectItem(jason_obj, "pcode");	
-        fprintf(stderr," pcode is %d--- \n",pc->valueint);
+        fprintf(stderr," pqqqqqqcode is %d--- \n",pc->valueint);
         int pcode = pc->valueint;
+        fprintf(stderr," pqqqqqqqqqqqcode is %d--- \n",pcode);
 	switch(pcode){
 	    case 9000:{
-	        //return echo 
+	        //return echo
+		 
+        	fprintf(stderr," cccccccccpcode is %d--- \n",pcode);
+        	fprintf(stderr," in case \n");
+        	int pcode = pc->valueint;
 		cJSON *es = cJSON_GetObjectItem(jason_obj, "echo_s");
 		cJSON *ei = cJSON_GetObjectItem(jason_obj, "echo_n");
 		send_echo_to_poya(es, ei);
+		cJSON_Delete(es);
+		cJSON_Delete(ei);
 		break;
 	    }
 	    case 9001:{
@@ -144,7 +153,7 @@ void uart_rt_poya(){
 	    case 9003:{
 		//restart board
 		send_restart_succ_to_poya();
- 		board_restart();
+ 		//board_restart();
 		break;
 	    }
 	    case 9005:{
@@ -158,6 +167,13 @@ void uart_rt_poya(){
 		cJSON *mini_sec = cJSON_GetObjectItem(jason_obj, "millisecond");
 		set_time(year, month, day, hour, min, sec, mini_sec);
 		send_set_time_succ_to_poya();
+		cJSON_Delete(year);
+		cJSON_Delete(month);
+		cJSON_Delete(day);
+		cJSON_Delete(hour);
+		cJSON_Delete(min);
+		cJSON_Delete(sec);
+		cJSON_Delete(mini_sec);
 		break;
 	    }
 	    case 8000:{
@@ -173,6 +189,10 @@ void uart_rt_poya(){
 		cJSON *dp = cJSON_GetObjectItem(jason_obj, "detectpolicy");
 		set_face_para(minFW, minFH, ms, dp);
 		send_set_para_succ_to_poya();
+		cJSON_Delete(minFW);
+		cJSON_Delete(minFH);
+		cJSON_Delete(ms);
+		cJSON_Delete(dp);
 		break;
 	    }
 	    case 8002:{
@@ -195,6 +215,7 @@ void uart_rt_poya(){
 	}	
 
 	len = 0;
+	free(uart_buffer);
         if(serialDataAvail(serial_fd) <= 0){
 	    break;
 	}
@@ -210,30 +231,51 @@ void sendJsonObject(cJSON* object){
     send_buffer(uart_out, uart_len);
     serialPutchar(serial_fd, UART_TAIL);
     fprintf(stderr, "len is %d--- \n", uart_len);
-    //printf("%s\n",uart_out);
+    printf("%s\n",uart_out);
+    fflush(stdout);
+    fprintf(stderr, "finish--- \n");
     cJSON_Delete(object);	
     free(uart_out);
 }
 
 void createJsonObject(cJSON* object, int pcode, int idx, int rs, char* msg){
-    object = cJSON_CreateObject();
+    //object = cJSON_CreateObject();
     cJSON_AddNumberToObject(object, "pcode", pcode);
     cJSON_AddNumberToObject(object, "idx", idx);
     cJSON_AddNumberToObject(object, "rs", rs);
     cJSON_AddStringToObject(object, "msg", msg);
+    char* uart_out;
+    uart_out = cJSON_Print(object);
+    fprintf(stderr, "----------------------------- \n");
+    printf("%s\n",uart_out);
+    fflush(stdout);
+    free(uart_out);
+    fprintf(stderr, "----------------------------- \n");
 }
 
 
 void send_echo_to_poya(cJSON* echo_s, cJSON* echo_n){
+    fprintf(stderr," in send echo to poya \n");
     cJSON* echo_obj;
     char* msg = "success";
+    echo_obj = cJSON_CreateObject();
     createJsonObject(echo_obj, 9000, 1, 0, msg);
+    fprintf(stderr, "kkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkk \n");
+    char* uart_out;
+    uart_out = cJSON_Print(echo_obj);
+    fprintf(stderr, "kkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkk \n");
+    printf("%s\n",uart_out);
+    fflush(stdout);
+    free(uart_out);
+    fprintf(stderr, "kkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkk \n");
+
     cJSON_AddStringToObject(echo_obj, "echo_n", echo_s->valuestring);
     cJSON_AddNumberToObject(echo_obj, "echo_s", echo_n->valueint);
     sendJsonObject(echo_obj);
 }
 
 void send_info_to_poya(){
+    fprintf(stderr," in send info to poya \n");
     cJSON* info_obj;
     char* msg = "success";
     createJsonObject(info_obj, 9001, 2, 0, msg);
