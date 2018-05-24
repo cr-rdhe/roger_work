@@ -24,7 +24,7 @@ void close_serial_device();
 void send_faces_to_poya(std::vector<float> rect, void *ts);
 
 void recv_face_test();
-
+void send_uart_test(int pc);
 void send_buffer(char *buff, size_t size);
 void recv_buffer(unsigned char *buff, size_t size);
 

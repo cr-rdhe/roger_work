@@ -8,30 +8,15 @@
 int main(int argc, char *argv[])
 {
   open_serial_device();
+  printf ("input is--- %s---", argv[2]) ;
+  fflush (stdout) ;
+  int input = atoi(argv[2]); 
   while(1)
-  {
-    std::vector<float> rect;
-    rect.push_back(1);
-    rect.push_back(0.2);
-    rect.push_back(0.2);
-    rect.push_back(0.6);
-    rect.push_back(0.6);
-    unsigned char x[16] = {
-              0x50,0x50,
-              0x50,0x50,
-              0x50,0x50,
-              0x50,0x50,
-              0x53,0x58,
-              0x55,0x52,
-              0x5b,0x5a,
-              0x50,0x55, };
-  
-    if(0)
-      send_faces_to_poya(rect, x);
-    else{
-      recv_face_test();
-    }
-   // break;
+  { 
+     //recv_face_test();
+     send_uart_test(input);
+     recv_face_test();
+     break;
   }
 
   close_serial_device();

@@ -129,7 +129,7 @@ void recv_face_test()
             while(serialDataAvail(serial_fd) <= 0){}
             get_byte = (char)serialGetchar(serial_fd);
 	}
-        //fprintf(stderr, "find the header \n");
+        fprintf(stderr, "find the header \n");
         while(serialDataAvail(serial_fd) <= 0){}
         get_byte = (char)serialGetchar(serial_fd);
         while(get_byte != 0xa9){
@@ -155,6 +155,65 @@ void recv_face_test()
     }
 
 }
+
+void send_uart_test(int pc){
+    cJSON* test_obj;
+    test_obj = cJSON_CreateObject();
+    int pcode = pc;
+    fprintf(stderr, "pcode is %d--- \n", pcode);
+    cJSON_AddNumberToObject(test_obj, "pcode", pcode);
+    cJSON_AddNumberToObject(test_obj, "idx", 2);
+    switch(pcode){
+        case 9000:{
+            cJSON_AddStringToObject(test_obj, "echo_s", "haaaalo");
+            cJSON_AddNumberToObject(test_obj, "echo_n", 999);
+	    break;
+	}
+	case 9002:{	  
+            cJSON_AddNumberToObject(test_obj, "loglevel", 2);
+            break;
+	} 
+	case 9005:{	  
+            cJSON_AddNumberToObject(test_obj, "year", 2);
+            cJSON_AddNumberToObject(test_obj, "month", 3);
+            cJSON_AddNumberToObject(test_obj, "day", 4);
+            cJSON_AddNumberToObject(test_obj, "hour", 5);
+            cJSON_AddNumberToObject(test_obj, "minute", 6);
+            cJSON_AddNumberToObject(test_obj, "second", 7);
+            cJSON_AddNumberToObject(test_obj, "millisecond", 888);
+            break;
+	}
+	case 8001:{	  
+            cJSON_AddNumberToObject(test_obj, "minfacewidth", 23);
+            cJSON_AddNumberToObject(test_obj, "minfaceheight", 24);
+            cJSON_AddNumberToObject(test_obj, "minscore", 25);
+            cJSON_AddNumberToObject(test_obj, "detectpolicy", 0);
+            break;
+	} 
+	
+	default:
+	    break;
+    }
+
+    char* uart_out;
+    uart_out = cJSON_Print(test_obj);
+    int uart_len = strlen(uart_out);
+    serialPutchar(serial_fd, 0xa5);
+    send_buffer(uart_out, uart_len);
+    serialPutchar(serial_fd, 0xa9);
+    //fprintf(stderr, "len is %d--- \n", uart_len);
+    //printf("%s\n",uart_out);
+    cJSON_Delete(test_obj);	
+    free(uart_out);
+
+}
+
+
+
+
+
+
+
 
 
 
