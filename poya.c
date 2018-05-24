@@ -77,60 +77,21 @@ void send_faces_to_poya(std::vector<float> rect)
 	cJSON_AddItemToArray(fis, float_array);
         i++;
     }
-    ///////////////////////////////////
-  cJSON *pc = cJSON_GetObjectItem(face_obj, "pcode");
-        fprintf(stderr," pcode is %d--- \n",pc->valueint);
-
-    //////////////////////////////////
     char* uart_out;
     uart_out = cJSON_Print(face_obj);
     int uart_len = strlen(uart_out);
     serialPutchar(serial_fd, 0xa5);
     send_buffer(uart_out, uart_len);
     serialPutchar(serial_fd, 0xa9);
-
-    fprintf(stderr, "len is %d--- \n", uart_len);
+    //fprintf(stderr, "len is %d--- \n", uart_len);
     //printf("%s\n",uart_out);
     cJSON_Delete(face_obj);	
-    //free(fis);	
     free(uart_out);
-}
-
-void recv_face_test()
-{
-    char *uart_buffer = (char*)malloc(1000);
-    int len = 0;
-    while(1){
-        char get_byte = (char)serialGetchar(serial_fd);
-        while(get_byte != 0xa5){
-            get_byte = (char)serialGetchar(serial_fd);
-        }
-        get_byte = (char)serialGetchar(serial_fd);
-        while(get_byte != 0xa9){
-            *(uart_buffer + len) = get_byte;
-            get_byte = (char)serialGetchar(serial_fd);
-            len += 1;
-        }
-	*(uart_buffer + len) = '\0';
-        cJSON* jason_obj = cJSON_Parse(uart_buffer);
-	cJSON *fis_obj = cJSON_GetObjectItem(jason_obj, "fis");
-        	
-	char* uart_jason = cJSON_Print(fis_obj);
-	printf("%s\n",uart_jason);
-			
-	len = 0;
-    }
-
 }
 
 void send_buffer(char *buff, size_t size)
 {
    serialPuts(serial_fd, buff, size);
-}
-
-void recv_buffer(unsigned char *buff, size_t size)
-{
-   serialGets(serial_fd, buff, size);
 }
 
 void uart_rt_poya(){
@@ -144,7 +105,7 @@ void uart_rt_poya(){
             while(serialDataAvail(serial_fd) <= 0){}
             get_byte = (char)serialGetchar(serial_fd);
 	}
-        fprintf(stderr, "find the header \n");
+        //fprintf(stderr, "find the header \n");
         while(serialDataAvail(serial_fd) <= 0){}
         get_byte = (char)serialGetchar(serial_fd);
         while(get_byte != 0xa9){
@@ -155,7 +116,7 @@ void uart_rt_poya(){
         }
 	*(uart_buffer + len) = '\0';
 	int test_len = strlen(uart_buffer);
-        fprintf(stderr, "testlen = %d---, len is %d--- \n",test_len,len);
+        //fprintf(stderr, "testlen = %d---, len is %d--- \n",test_len,len);
         cJSON* jason_obj = cJSON_Parse(uart_buffer);
 	char* u_jason = cJSON_Print(jason_obj);
 	printf("%s\n",u_jason);
@@ -233,8 +194,6 @@ void uart_rt_poya(){
 		break;
 	}	
 
-
-			
 	len = 0;
         if(serialDataAvail(serial_fd) <= 0){
 	    break;
