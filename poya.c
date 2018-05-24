@@ -49,18 +49,14 @@ void send_faces_to_poya(std::vector<float> rect)
     cJSON* face_obj;
     face_obj = cJSON_CreateObject();
     cJSON_AddNumberToObject(face_obj, "pcode", 8004);
-    cJSON_AddStringToObject(face_obj, "pname", "FDR");
     cJSON_AddNumberToObject(face_obj, "idx", 2);
-    //uint64_t cur_time;
-    //ReadTimeStamp(ts, &cur_time);
     struct timespec ts;
     clock_gettime(CLOCK_MONOTONIC, &ts);
     char* time_bytes = (char*)malloc(30);
-    //uint642byte(cur_time, time_bytes_ptr);
     sprintf(time_bytes, "%d%d", ts.tv_sec, ts.tv_nsec);
-    printf("time is ---%d---%d---",ts.tv_sec, ts.tv_nsec);
+    //printf("time is ---%d---%d---",ts.tv_sec, ts.tv_nsec);
     //time_bytes[sizeof(uint64_t)] = '\0';
-    printf("string:---%s---\n", time_bytes);
+    //printf("string:---%s---\n", time_bytes);
     cJSON_AddStringToObject(face_obj, "pid", time_bytes);
     cJSON_AddNumberToObject(face_obj, "dt", 2);
     cJSON_AddNumberToObject(face_obj, "w", 1920);
@@ -167,25 +163,30 @@ void uart_rt_poya(){
         fprintf(stderr," pcode is %d--- \n",pc->valueint);
         int pcode = pc->valueint;
 	switch(pcode){
-	    case 9000:
+	    case 9000:{
 	        //return echo 
 		cJSON *es = cJSON_GetObjectItem(jason_obj, "echo_s");
 		cJSON *ei = cJSON_GetObjectItem(jason_obj, "echo_n");
 		send_echo_to_poya(es, ei);
 		break;
-	    case 9001:
+	    }
+	    case 9001:{
 		//retrun board info
 		send_info_to_poya(); 
 		break;
-	    case 9002:
+	    }
+	    case 9002:{
 		//return log level
 		send_log_level_to_poya();
 		break;
-	    case 9003:
+	    }
+	    case 9003:{
 		//restart board
 		send_restart_succ_to_poya();
+ 		board_restart();
 		break;
-	    case 9005:
+	    }
+	    case 9005:{
 		//set sys time
 		cJSON *year = cJSON_GetObjectItem(jason_obj, "year");
 		cJSON *month = cJSON_GetObjectItem(jason_obj, "month");
@@ -197,11 +198,13 @@ void uart_rt_poya(){
 		set_time(year, month, day, hour, min, sec, mini_sec);
 		send_set_time_succ_to_poya();
 		break;
-	    case 8000:
+	    }
+	    case 8000:{
 		// get face para
 		send_face_para_to_poya();
 		break;
-	    case 8001:
+	   }
+	    case 8001:{
 		// set face fara
 		cJSON *minFW = cJSON_GetObjectItem(jason_obj, "minfacewidth");
 		cJSON *minFH = cJSON_GetObjectItem(jason_obj, "minfaceheight");
@@ -209,15 +212,20 @@ void uart_rt_poya(){
 		cJSON *dp = cJSON_GetObjectItem(jason_obj, "detectpolicy");
 		set_face_para(minFW, minFH, ms, dp);
 		send_set_para_succ_to_poya();
-	    case 8002:
+		break;
+	    }
+	    case 8002:{
 		//open face detect
 		open_face_detect();
 		send_oc_dec_succ_to_poya(1);
 		break;
-	    case 8003:
+	    }
+	    case 8003:{
 		//close face detect
 		close_face_detect();
-		send_oc_face_dec_succ_to_poya(2);
+		send_oc_dec_succ_to_poya(0);
+		break;
+	    }
 	    case 8004:
 		//face received echo
 		break;
@@ -233,5 +241,117 @@ void uart_rt_poya(){
 	}
     }
 
+}
+
+void sendJsonObject(cJSON* object){
+    char* uart_out;
+    uart_out = cJSON_Print(object);
+    int uart_len = strlen(uart_out);
+    serialPutchar(serial_fd, UART_HEAD);
+    send_buffer(uart_out, uart_len);
+    serialPutchar(serial_fd, UART_TAIL);
+    fprintf(stderr, "len is %d--- \n", uart_len);
+    //printf("%s\n",uart_out);
+    cJSON_Delete(object);	
+    free(uart_out);
+}
+
+void createJsonObject(cJSON* object, int pcode, int idx, int rs, char* msg){
+    object = cJSON_CreateObject();
+    cJSON_AddNumberToObject(object, "pcode", pcode);
+    cJSON_AddNumberToObject(object, "idx", idx);
+    cJSON_AddNumberToObject(object, "rs", rs);
+    cJSON_AddStringToObject(object, "msg", msg);
+}
+
+
+void send_echo_to_poya(cJSON* echo_s, cJSON* echo_n){
+    cJSON* echo_obj;
+    char* msg = "success";
+    createJsonObject(echo_obj, 9000, 1, 0, msg);
+    cJSON_AddStringToObject(echo_obj, "echo_n", echo_s->valuestring);
+    cJSON_AddNumberToObject(echo_obj, "echo_s", echo_n->valueint);
+    sendJsonObject(echo_obj);
+}
+
+void send_info_to_poya(){
+    cJSON* info_obj;
+    char* msg = "success";
+    createJsonObject(info_obj, 9001, 2, 0, msg);
+    // system, software, firmware, systime, cpuinfo, meminfo not define yet
+    sendJsonObject(info_obj);
+}
+
+void send_log_level_to_poya(){
+    cJSON* logl_obj;
+    char* msg = "success";
+    createJsonObject(logl_obj, 9002, 2, 0, msg);
+    sendJsonObject(logl_obj);
+}
+
+void send_restart_succ_to_poya(){
+    cJSON* ress_obj;
+    char* msg = "success";
+    createJsonObject(ress_obj, 9003, 2, 0, msg);
+    sendJsonObject(ress_obj);
+}
+
+void set_time(cJSON* year, cJSON* month,cJSON*  day, cJSON* hour, cJSON* min, cJSON* sec, cJSON* mini_sec){
 
 }
+
+void send_set_time_succ_to_poya(){
+    cJSON* sett_obj;
+    char* msg = "success";
+    createJsonObject(sett_obj, 9005, 2, 0, msg);
+    sendJsonObject(sett_obj);
+}
+
+void send_face_para_to_poya(){
+    cJSON* facepara_obj;
+    char* msg = "success";
+    createJsonObject(facepara_obj, 8000, 2, 0, msg);
+    cJSON_AddNumberToObject(facepara_obj, "minfacewidth", 45);
+    cJSON_AddNumberToObject(facepara_obj, "minfaceheight", 45);
+    cJSON_AddNumberToObject(facepara_obj, "minscore", 60);// float not support by cjson
+    cJSON_AddNumberToObject(facepara_obj, "detectpolicy", 0);
+    sendJsonObject(facepara_obj);
+}
+
+void set_face_para(cJSON* minFW, cJSON* minFH, cJSON* ms, cJSON* dp){
+
+}
+
+void send_set_para_succ_to_poya(){
+    cJSON* setp_obj;
+    char* msg = "success";
+    createJsonObject(setp_obj, 8001, 2, 0, msg);
+    sendJsonObject(setp_obj);
+}
+
+void open_face_detect(){
+
+}
+
+void send_oc_dec_succ_to_poya(int f_open){
+    cJSON* ocdec_obj;
+    char* msg = "success";
+    int pcode = f_open == 1? 8002: 8003;
+    createJsonObject(ocdec_obj, pcode, 2, 0, msg);
+    sendJsonObject(ocdec_obj);
+
+}
+
+void close_face_detect(){
+
+}
+
+
+
+
+
+
+
+
+
+
